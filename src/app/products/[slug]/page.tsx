@@ -1,5 +1,13 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
+import { getProducts, getProduct } from '@/app/service/products';
+
+export const revalidate = 3;
+
+type Metadata = {
+  title: string;
+  description: string;
+};
 
 type Props = {
   params: {
@@ -7,24 +15,39 @@ type Props = {
   };
 };
 
-export function generateMetadata({ params }: Props) {
-  return {
-    title: `product name: ${params.slug}`,
-  };
-}
+// export function generateMetadata({ params }: Props) {
+//   return {
+//     title: `product name: ${params.slug}`,
+//   };
+// }
+export const generateMetadata = async ({
+  params,
+}: Props): Promise<Metadata> => {
+  const { slug } = params;
+  const product = await getProduct(slug);
 
-export default function PantsPage({ params }: Props) {
-  if (params.slug === 'notthing') {
+  return {
+    title: `Wonderful Items | ${product?.name.toUpperCase()}`,
+    description: `Check our wonderful ${product?.name}!`,
+  };
+};
+
+export default async function ProductPage({ params: { slug } }: Props) {
+  const product = await getProduct(slug);
+
+  if (!product) {
     notFound();
   }
 
-  return <>{params.slug} page!</>;
+  // 서버 파일에 있는 데이터 중 해당 제품의 정보를 찾아서 보여 줌
+  return <>{product.name} page!</>;
 }
 
-// 페이지 미리 생성: ssg 스타틱 사이트 제너레이트
-export function generateStaticParams() {
-  const products = ['pants', 'skirt'];
+export async function generateStaticParams() {
+  // 모든 제품의 페이지들을 미리 만들어 둘 수 있게 할 예정, 페이지 미리 생성(SSG: 스타틱 사이트 제너레이트)
+  const products = await getProducts();
+
   return products.map((product) => ({
-    slug: product,
+    slug: product.id,
   }));
 }
