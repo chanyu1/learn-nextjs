@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getProducts, getProduct } from '@/app/service/products';
 
@@ -40,7 +41,17 @@ export default async function ProductPage({ params: { slug } }: Props) {
   }
 
   // 서버 파일에 있는 데이터 중 해당 제품의 정보를 찾아서 보여 줌
-  return <>{product.name} page!</>;
+  return (
+    <>
+      <h1>{product.name} page!</h1>
+      <Image
+        src={`/images/${product.image}`}
+        alt={product.name}
+        width={300}
+        height={300}
+      />
+    </>
+  );
 }
 
 export async function generateStaticParams() {
